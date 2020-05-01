@@ -5,9 +5,6 @@ from torchvision import models
 import torchvision.transforms as transforms
 from PIL import Image
 
-import gunicorn
-print(gunicorn.__version__)
-
 imagenet_class_index = json.load(open('imagenet_class_index.json'))
 model = torch.load('densenet.pt')
 # model = torch.load("densenet121-a639ec97.pth")
