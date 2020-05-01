@@ -2,7 +2,7 @@ import flask
 from flask import Flask, request, render_template
 import numpy as np
 from model import get_prediction
-
+import os
 app = Flask(__name__)
 
 @app.route("/")
@@ -29,4 +29,4 @@ def make_prediction():
 if __name__ == '__main__':
 	# start api
 	# app.run(host='127.0.0.1', port=5000, debug=False)
-	app.run(port=5000, debug=False)
+	app.run(port=int(os.environ.get('PORT', 5000)), debug=True)
