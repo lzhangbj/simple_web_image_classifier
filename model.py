@@ -1,28 +1,27 @@
-import scipy.io 
-import numpy as np
-from sklearn.utils import shuffle 
-from sklearn.ensemble import RandomForestClassifier 
-from sklearn.model_selection import train_test_split 
-from sklearn.externals import joblib
+import io
+import json
+from torchvision import models
+import torchvision.transforms as transforms
+from PIL import Image
 
-# load data file as dict object
-train_data = scipy.io.loadmat('extra_32x32.mat') 
+imagenet_class_index = json.load(open('imagenet_class_index.json'))
+model = models.densenet121(pretrained=True)
+model.eval()
 
-# extract the images (X) and labels (y) from the dict
-X = train_data['X'] 
-y = train_data['y'] 
+def transform_image(image_bytes):
+    my_transforms = transforms.Compose([transforms.Resize(255),
+                                        transforms.CenterCrop(224),
+                                        transforms.ToTensor(),
+                                        transforms.Normalize(
+                                            [0.485, 0.456, 0.406],
+                                            [0.229, 0.224, 0.225])])
+    image = Image.open(io.BytesIO(image_bytes))
+    return my_transforms(image).unsqueeze(0)
 
-# reshape our matrices into 1D vectors and shuffle (still maintaining the index pairings)
-X = X.reshape(X.shape[0]*X.shape[1]*X.shape[2],X.shape[3]).T 
-y = y.reshape(y.shape[0],) 
-X, y = shuffle(X, y, random_state=42)
 
-# split data into training and testing sets 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)
-
-# define classifier and fit to training data
-clf = RandomForestClassifier() 
-clf.fit(X_train, y_train) 
-
-# save model
-joblib.dump(clf, 'model.pkl')
+def get_prediction(image_bytes):
+    tensor = transform_image(image_bytes=image_bytes)
+    outputs = model.forward(tensor)
+    _, y_hat = outputs.max(1)
+    predicted_idx = str(y_hat.item())
+    return imagenet_class_index[predicted_idx]
