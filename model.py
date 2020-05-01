@@ -1,12 +1,16 @@
 import io
 import json
+import torch
 from torchvision import models
 import torchvision.transforms as transforms
 from PIL import Image
 
 imagenet_class_index = json.load(open('imagenet_class_index.json'))
-model = models.densenet121(pretrained=True)
+model = torch.load('densenet.pt')
+# model = torch.load("densenet121-a639ec97.pth")
 model.eval()
+
+# resnet = models.resnet18(pretrained=True)
 
 def transform_image(image_bytes):
     my_transforms = transforms.Compose([transforms.Resize(255),
